@@ -9,6 +9,8 @@ import type {
   QuestionSummary,
   QuizInput,
   QuizQuestions,
+  Roadmap,
+  RoadmapInput,
   Tag,
   TrackInput,
   TrackTree,
@@ -41,6 +43,28 @@ export const admin = {
   overview: () => api<Envelope<Overview>>('/admin/overview').then((r) => r.data),
 
   tracks: () => api<Envelope<TrackTree[]>>('/admin/tracks').then((r) => r.data),
+
+  roadmaps: () => api<Envelope<Roadmap[]>>('/admin/roadmaps').then((r) => r.data),
+
+  createRoadmap: (input: RoadmapInput) =>
+    api<Envelope<Roadmap>>('/admin/roadmaps', { method: 'POST', body: input }).then((r) => r.data),
+
+  updateRoadmap: (slug: string, input: RoadmapInput) =>
+    api<Envelope<Roadmap>>(`/admin/roadmaps/${encodeURIComponent(slug)}`, { method: 'PUT', body: input })
+      .then((r) => r.data),
+
+  deleteRoadmap: (slug: string) =>
+    api<void>(`/admin/roadmaps/${encodeURIComponent(slug)}`, { method: 'DELETE' }),
+
+  deleteTrack: (slug: string) => api<void>(`/admin/tracks/${encodeURIComponent(slug)}`, { method: 'DELETE' }),
+
+  deleteJourney: (slug: string) => api<void>(`/admin/journeys/${encodeURIComponent(slug)}`, { method: 'DELETE' }),
+
+  deleteQuiz: (slug: string) => api<void>(`/admin/quizzes/${encodeURIComponent(slug)}`, { method: 'DELETE' }),
+
+  deleteQuestion: (key: string) => api<void>(`/admin/questions/${encodeURIComponent(key)}`, { method: 'DELETE' }),
+
+  deleteTag: (slug: string) => api<void>(`/admin/tags/${encodeURIComponent(slug)}`, { method: 'DELETE' }),
 
   createTrack: (input: TrackInput) =>
     api<Envelope<TrackTree>>('/admin/tracks', { method: 'POST', body: input }).then((r) => r.data),

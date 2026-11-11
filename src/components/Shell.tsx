@@ -20,6 +20,7 @@ export function Shell() {
           </NavLink>
           <NavLink to="/questions">Questions</NavLink>
           <NavLink to="/structure">Structure</NavLink>
+          <NavLink to="/roadmaps">Roadmaps</NavLink>
           <NavLink to="/tags">Tags</NavLink>
         </nav>
         <span className="grow" />

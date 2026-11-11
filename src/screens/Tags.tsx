@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { ConfirmButton } from '../components/Confirm'
 import { useToast } from '../components/Toast'
 import { admin } from '../lib/admin'
 import { ApiError } from '../lib/api'
@@ -77,6 +78,7 @@ export function Tags() {
                 <th>Slug</th>
                 <th>Name</th>
                 <th className="num">Questions</th>
+                <th />
               </tr>
             </thead>
             <tbody>
@@ -87,6 +89,27 @@ export function Tags() {
                   </td>
                   <td>{tag.name}</td>
                   <td className="num">{tag.questionCount}</td>
+                  <td style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
+                    <ConfirmButton
+                      label="Delete"
+                      onConfirm={() => {
+                        admin
+                          .deleteTag(tag.slug)
+                          .then(() => {
+                            setTags((current) => (current ?? []).filter((row) => row.slug !== tag.slug))
+                            toast.show(`Deleted ${tag.slug}`, 'ok')
+                          })
+                          .catch((cause: unknown) =>
+                            toast.show(
+                              cause instanceof ApiError
+                                ? (cause.firstError('tag') ?? cause.message)
+                                : 'Could not reach the API',
+                              'bad',
+                            ),
+                          )
+                      }}
+                    />
+                  </td>
                 </tr>
               ))}
             </tbody>

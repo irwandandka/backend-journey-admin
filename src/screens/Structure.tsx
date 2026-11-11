@@ -1,10 +1,20 @@
 import { useCallback, useEffect, useState } from 'react'
+import { ConfirmButton } from '../components/Confirm'
 import { LocaleBadge } from '../components/LocaleFields'
 import { useToast } from '../components/Toast'
 import { admin } from '../lib/admin'
 import { ApiError } from '../lib/api'
 import { FALLBACK, LOCALES } from '../lib/locales'
-import type { JourneyInput, Locale, QuizInput, Tier, TrackInput, TrackTree, UnlockRule } from '../lib/types'
+import type {
+  JourneyInput,
+  Locale,
+  QuizInput,
+  Roadmap,
+  Tier,
+  TrackInput,
+  TrackTree,
+  UnlockRule,
+} from '../lib/types'
 
 const TIERS: Tier[] = ['foundation', 'intermediate', 'advanced', 'deep']
 const RULES: UnlockRule[] = ['sequential', 'tier', 'open']
@@ -21,6 +31,7 @@ type Editing =
 export function Structure() {
   const toast = useToast()
   const [tracks, setTracks] = useState<TrackTree[] | null>(null)
+  const [roadmaps, setRoadmaps] = useState<Roadmap[]>([])
   const [open, setOpen] = useState<string | null>(null)
   const [editing, setEditing] = useState<Editing>(null)
 
@@ -29,7 +40,28 @@ export function Structure() {
       .tracks()
       .then(setTracks)
       .catch(() => toast.show('Could not load the structure', 'bad'))
+
+    admin
+      .roadmaps()
+      .then(setRoadmaps)
+      .catch(() => setRoadmaps([]))
   }, [toast])
+
+  const remove = useCallback(
+    async (run: () => Promise<void>, done: string) => {
+      try {
+        await run()
+        toast.show(done, 'ok')
+        load()
+      } catch (cause) {
+        toast.show(
+          cause instanceof ApiError ? (Object.values(cause.errors)[0]?.[0] ?? cause.message) : 'Could not reach the API',
+          'bad',
+        )
+      }
+    },
+    [toast, load],
+  )
 
   useEffect(load, [load])
 
@@ -64,6 +96,7 @@ export function Structure() {
       {editing?.kind === 'track' && (
         <TrackForm
           track={editing.slug === null ? null : (tracks.find((t) => t.slug === editing.slug) ?? null)}
+          roadmaps={roadmaps}
           nextPosition={tracks.length + 1}
           onCancel={() => setEditing(null)}
           onSaved={(updated) => {
@@ -99,6 +132,10 @@ export function Structure() {
               <button type="button" className="btn ghost sm" onClick={() => setOpen(expanded ? null : track.slug)}>
                 {expanded ? 'Hide journeys' : 'Journeys'}
               </button>
+              <ConfirmButton
+                label="Delete"
+                onConfirm={() => void remove(() => admin.deleteTrack(track.slug), `Deleted ${track.slug}`)}
+              />
             </div>
 
             {expanded && (
@@ -135,6 +172,7 @@ export function Structure() {
                           toast.show(message, 'ok')
                         }}
                         onError={(message) => toast.show(message, 'bad')}
+                        onDelete={remove}
                       />
                     ))}
                   </div>
@@ -166,6 +204,7 @@ function JourneyRow({
   onEdit,
   onSaved,
   onError,
+  onDelete,
 }: {
   journey: Journey
   editing: Editing
@@ -173,6 +212,7 @@ function JourneyRow({
   onEdit: (next: Editing) => void
   onSaved: (updated: TrackTree, message: string) => void
   onError: (message: string) => void
+  onDelete: (run: () => Promise<void>, done: string) => Promise<void>
 }) {
   const quiz = journey.quizzes[0] ?? null
 
@@ -209,8 +249,16 @@ function JourneyRow({
             <button type="button" className="btn ghost sm" onClick={() => onEdit({ kind: 'questions', quizSlug: quiz.slug })}>
               Questions
             </button>
+            <ConfirmButton
+              label="Delete quiz"
+              onConfirm={() => void onDelete(() => admin.deleteQuiz(quiz.slug), `Deleted ${quiz.slug}`)}
+            />
           </>
         )}
+        <ConfirmButton
+          label="Delete"
+          onConfirm={() => void onDelete(() => admin.deleteJourney(journey.slug), `Deleted ${journey.slug}`)}
+        />
       </div>
 
       {editing?.kind === 'quiz' && editing.journeySlug === journey.slug && (
@@ -245,11 +293,13 @@ function useLocaleDraft<T extends Record<string, string>>(blank: T, initial?: Pa
 
 function TrackForm({
   track,
+  roadmaps,
   nextPosition,
   onCancel,
   onSaved,
 }: {
   track: TrackTree | null
+  roadmaps: Roadmap[]
   nextPosition: number
   onCancel: () => void
   onSaved: (updated: TrackTree) => void
@@ -260,6 +310,7 @@ function TrackForm({
   const [colorLight, setColorLight] = useState(track?.colorLight ?? '#0e7490')
   const [position, setPosition] = useState(track?.position ?? nextPosition)
   const [isPublished, setIsPublished] = useState(track?.isPublished ?? false)
+  const [roadmapSlug, setRoadmapSlug] = useState<string>('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -279,6 +330,7 @@ function TrackForm({
       colorLight,
       position,
       isPublished,
+      roadmapSlug: roadmapSlug === '' ? null : roadmapSlug,
       translations: Object.fromEntries(
         LOCALES.filter((locale) => rows[locale].name.trim() !== '').map((locale) => [
           locale,
@@ -322,6 +374,17 @@ function TrackForm({
         <label className="field" style={{ maxWidth: 110 }}>
           <span>Position</span>
           <input type="number" min={0} value={position} onChange={(e) => setPosition(Number(e.target.value))} />
+        </label>
+        <label className="field">
+          <span>Roadmap</span>
+          <select value={roadmapSlug} onChange={(e) => setRoadmapSlug(e.target.value)}>
+            <option value="">{track === null ? 'First roadmap' : 'Leave where it is'}</option>
+            {roadmaps.map((roadmap) => (
+              <option key={roadmap.slug} value={roadmap.slug}>
+                {roadmap.slug}
+              </option>
+            ))}
+          </select>
         </label>
       </div>
 

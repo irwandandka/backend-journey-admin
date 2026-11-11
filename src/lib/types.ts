@@ -46,6 +46,10 @@ export type UnlockRule = 'sequential' | 'tier' | 'open'
 
 export type TrackInput = App.Data.Admin.TrackInputData
 
+export type Roadmap = App.Data.Admin.RoadmapData
+
+export type RoadmapInput = App.Data.Admin.RoadmapInputData
+
 export type JourneyInput = Narrow<App.Data.Admin.JourneyInputData, { tier: Tier; unlockRule: UnlockRule }>
 
 export type QuizInput = App.Data.Admin.QuizInputData

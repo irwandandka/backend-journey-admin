@@ -1,12 +1,16 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import { ConfirmButton } from '../components/Confirm'
+import { useToast } from '../components/Toast'
 import { admin } from '../lib/admin'
+import { ApiError } from '../lib/api'
 import type { Page, QuestionSummary, Tag, TrackTree } from '../lib/types'
 
 const DIFFICULTIES = ['easy', 'medium', 'hard']
 const LOCALES = ['en', 'id']
 
 export function Questions() {
+  const toast = useToast()
   const [params, setParams] = useSearchParams()
   const [page, setPage] = useState<Page<QuestionSummary> | null>(null)
   const [tags, setTags] = useState<Tag[]>([])
@@ -35,6 +39,8 @@ export function Questions() {
     admin.tracks().then(setTracks).catch(() => setTracks([]))
   }, [])
 
+  const [reloads, setReloads] = useState(0)
+
   useEffect(() => {
     setError(null)
 
@@ -49,7 +55,7 @@ export function Questions() {
       })
       .then(setPage)
       .catch(() => setError('Could not load the questions'))
-  }, [read])
+  }, [read, reloads])
 
   useEffect(() => {
     setTerm(params.get('q') ?? '')
@@ -143,6 +149,7 @@ export function Questions() {
                 <th className="num">Ver</th>
                 <th className="num">Opts</th>
                 <th className="num">Quizzes</th>
+                <th />
               </tr>
             </thead>
             <tbody>
@@ -187,12 +194,35 @@ export function Questions() {
                   <td className="num">{question.version}</td>
                   <td className="num">{question.optionCount}</td>
                   <td className="num">{question.quizCount}</td>
+                  <td style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
+                    <ConfirmButton
+                      label="Delete"
+                      onConfirm={() => {
+                        admin
+                          .deleteQuestion(question.key)
+                          .then(() => {
+                            toast.show(`Deleted ${question.key}`, 'ok')
+                            setReloads((n) => n + 1)
+                          })
+                          .catch((cause: unknown) =>
+                            toast.show(
+                              cause instanceof ApiError
+                                ? (Object.values(cause.errors)[0]?.[0] ?? cause.message)
+                                : 'Could not reach the API',
+                              'bad',
+                            ),
+                          )
+                      }}
+                    />
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         )}
       </div>
+
+      {toast.node}
 
       {page !== null && page.meta.lastPage > 1 && (
         <div className="pager">
