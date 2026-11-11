@@ -5,6 +5,7 @@ import { Login } from './screens/Login'
 import { Overview } from './screens/Overview'
 import { QuestionEditor } from './screens/QuestionEditor'
 import { Questions } from './screens/Questions'
+import { Structure } from './screens/Structure'
 import { Tags } from './screens/Tags'
 
 export default function App() {
@@ -43,6 +44,7 @@ export default function App() {
         <Route path="questions" element={<Questions />} />
         <Route path="questions/new" element={<QuestionEditor />} />
         <Route path="questions/:key" element={<QuestionEditor />} />
+        <Route path="structure" element={<Structure />} />
         <Route path="tags" element={<Tags />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>

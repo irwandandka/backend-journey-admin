@@ -1,12 +1,16 @@
 import { api } from './api'
 import type {
   Envelope,
+  JourneyInput,
   Overview,
   Page,
   QuestionDetail,
   QuestionInput,
   QuestionSummary,
+  QuizInput,
+  QuizQuestions,
   Tag,
+  TrackInput,
   TrackTree,
 } from './types'
 
@@ -37,6 +41,36 @@ export const admin = {
   overview: () => api<Envelope<Overview>>('/admin/overview').then((r) => r.data),
 
   tracks: () => api<Envelope<TrackTree[]>>('/admin/tracks').then((r) => r.data),
+
+  createTrack: (input: TrackInput) =>
+    api<Envelope<TrackTree>>('/admin/tracks', { method: 'POST', body: input }).then((r) => r.data),
+
+  updateTrack: (slug: string, input: TrackInput) =>
+    api<Envelope<TrackTree>>(`/admin/tracks/${encodeURIComponent(slug)}`, { method: 'PUT', body: input })
+      .then((r) => r.data),
+
+  createJourney: (input: JourneyInput) =>
+    api<Envelope<TrackTree>>('/admin/journeys', { method: 'POST', body: input }).then((r) => r.data),
+
+  updateJourney: (slug: string, input: JourneyInput) =>
+    api<Envelope<TrackTree>>(`/admin/journeys/${encodeURIComponent(slug)}`, { method: 'PUT', body: input })
+      .then((r) => r.data),
+
+  createQuiz: (input: QuizInput) =>
+    api<Envelope<TrackTree>>('/admin/quizzes', { method: 'POST', body: input }).then((r) => r.data),
+
+  updateQuiz: (slug: string, input: QuizInput) =>
+    api<Envelope<TrackTree>>(`/admin/quizzes/${encodeURIComponent(slug)}`, { method: 'PUT', body: input })
+      .then((r) => r.data),
+
+  quizQuestions: (slug: string) =>
+    api<Envelope<QuizQuestions>>(`/admin/quizzes/${encodeURIComponent(slug)}/questions`).then((r) => r.data),
+
+  setQuizQuestions: (slug: string, keys: string[]) =>
+    api<Envelope<QuizQuestions>>(`/admin/quizzes/${encodeURIComponent(slug)}/questions`, {
+      method: 'PUT',
+      body: { keys },
+    }).then((r) => r.data),
 
   tags: () => api<Envelope<Tag[]>>('/admin/tags').then((r) => r.data),
 

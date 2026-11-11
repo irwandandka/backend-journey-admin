@@ -3,10 +3,9 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useToast } from '../components/Toast'
 import { admin } from '../lib/admin'
 import { ApiError } from '../lib/api'
+import { FALLBACK, LOCALES } from '../lib/locales'
 import type { Difficulty, Locale, QuestionDetail, QuestionInput, QuestionType, Tag, TrackTree } from '../lib/types'
 
-const LOCALES: Locale[] = ['en', 'id']
-const FALLBACK: Locale = 'en'
 const TYPES: QuestionType[] = ['single_choice', 'multi_choice', 'true_false']
 const DIFFICULTIES: Difficulty[] = ['easy', 'medium', 'hard']
 const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']

@@ -24,6 +24,9 @@ export function Overview() {
           <p className="eyebrow">Content</p>
           <h1>Overview</h1>
         </div>
+        <a className="btn ghost" href={`${import.meta.env.VITE_API_URL ?? 'http://localhost:8000'}/api/v1/admin/export`}>
+          Export content
+        </a>
         <Link to="/questions/new" className="btn">
           New question
         </Link>
@@ -107,6 +110,7 @@ export function Overview() {
                 <th>Journey</th>
                 <th>Tier</th>
                 <th className="num">Position</th>
+                <th />
               </tr>
             </thead>
             <tbody>
@@ -122,6 +126,11 @@ export function Overview() {
                     <span className="pill">{journey.tier}</span>
                   </td>
                   <td className="num">{journey.position}</td>
+                  <td>
+                    <Link to="/structure" className="btn ghost sm">
+                      Fix
+                    </Link>
+                  </td>
                 </tr>
               ))}
             </tbody>

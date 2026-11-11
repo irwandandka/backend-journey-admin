@@ -42,6 +42,16 @@ export type Overview = Narrow<
   }
 >
 
+export type UnlockRule = 'sequential' | 'tier' | 'open'
+
+export type TrackInput = App.Data.Admin.TrackInputData
+
+export type JourneyInput = Narrow<App.Data.Admin.JourneyInputData, { tier: Tier; unlockRule: UnlockRule }>
+
+export type QuizInput = App.Data.Admin.QuizInputData
+
+export type QuizQuestions = { slug: string; questionCount: number; keys: string[] }
+
 export type TrackTree = Narrow<
   App.Data.Admin.TrackTreeData,
   { journeys: (Omit<App.Data.Admin.TrackTreeData['journeys'][number], 'tier'> & { tier: Tier })[] }
