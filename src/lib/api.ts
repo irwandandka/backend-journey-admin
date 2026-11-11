@@ -25,6 +25,17 @@ function readCookie(name: string): string | null {
 
 let csrfFetched = false
 
+let onUnauthorized: (() => void) | null = null
+
+/**
+ * Called whenever the API answers 401, so an expired session drops the app back
+ * to the sign-in screen instead of surfacing as a generic failure on whatever
+ * page the person happened to be on.
+ */
+export function setUnauthorizedHandler(handler: (() => void) | null): void {
+  onUnauthorized = handler
+}
+
 async function ensureCsrfCookie(): Promise<void> {
   if (csrfFetched && readCookie('XSRF-TOKEN')) return
 
@@ -66,6 +77,11 @@ export async function api<T>(path: string, options: RequestOptions = {}): Promis
     csrfFetched = false
     await ensureCsrfCookie()
     response = await send()
+  }
+
+  if (response.status === 401) {
+    csrfFetched = false
+    onUnauthorized?.()
   }
 
   if (response.status === 204) return undefined as T

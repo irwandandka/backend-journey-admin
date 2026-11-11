@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { setUnauthorizedHandler } from './api'
 import { auth } from './auth'
 import { AppContext, type ThemeChoice } from './app-state'
 import type { User } from './types'
@@ -17,6 +18,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [booting, setBooting] = useState(true)
   const [theme, setThemeState] = useState<ThemeChoice>(storedTheme)
+
+  useEffect(() => {
+    setUnauthorizedHandler(() => setUser(null))
+
+    return () => setUnauthorizedHandler(null)
+  }, [])
 
   useEffect(() => {
     auth
